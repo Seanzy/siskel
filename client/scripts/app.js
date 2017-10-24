@@ -5,7 +5,11 @@ var Movie = Backbone.Model.extend({
   },
 
   toggleLike: function() {
-    // your code here
+    like: this.set('like', !this.get('like'));
+    console.log('this.collection:', this.collection);
+    this.collection.sort();
+    
+    // Movies.sortByField(to);
   }
 
 });
@@ -21,7 +25,13 @@ var Movies = Backbone.Collection.extend({
   comparator: 'title',
 
   sortByField: function(field) {
-    // your code here
+    // your code here 
+    // console.log(this);
+    // console.log('field ', field);
+    this.comparator = field; 
+    // console.log('comparator', this.get('comparator'));
+    this.sort();
+    
   }
 
 });
@@ -58,7 +68,28 @@ var MovieView = Backbone.View.extend({
                         </div>'),
 
   initialize: function() {
-    // your code here
+    this.model.on('change:like', function() {
+    /* Let's break down the line above:
+     * - `this`           => the CommentView instance
+     * - `this.model`     => the model associated with this view instance
+     *   - This has not been set yet - it will be set later to a Comment model.
+     * - `this.model.on`  => register an event listener to the model
+     * - `'change:votes'` => this first argument defines what to listen for
+     *   - We can listen for a change on a specific attribute using a colon.
+     * - `function`       => this is the callback for this event listener */
+      this.render();
+    /*   - Usually, we can't rely on `this` being what we think it is in
+     *      an event listener. However, Backbone allows us to specify what
+     *      `this` will be in the third argument of `model.on`,
+     *      as we will do in the next line: */
+    }, this);
+    /* We've passed in `this` from the the outer scope into the event listener,
+     * making it so that `this` is bound to the individual comment's view,
+     * and not some random thing.
+     *
+     * If this is confusing, ask your peers and halp desk
+     * until you have a good grasp of the concept.
+     */
   },
 
   events: {
@@ -66,7 +97,8 @@ var MovieView = Backbone.View.extend({
   },
 
   handleClick: function() {
-    // your code here
+    this.model.toggleLike();
+
   },
 
   render: function() {
@@ -78,9 +110,18 @@ var MovieView = Backbone.View.extend({
 
 var MoviesView = Backbone.View.extend({
 
-  initialize: function() {
-    // your code here
+  initialize: function() { // this is called every time we want a new view of movies
+    console.log('thisssss', this);
+    this.collection.on('sort', function() {
+      //this.collectionView.sort();
+      this.render();
+    }, this);
+    
   },
+  
+  // events: {
+  //   'click button'
+  // }
 
   render: function() {
     this.$el.empty();
